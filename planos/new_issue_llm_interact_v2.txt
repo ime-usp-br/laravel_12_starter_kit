@@ -1,0 +1,57 @@
+TITLE: [DevTools] Aprimorar llm_interact.py: Contexto Essencial, Limites API e UX
+TYPE: refactor
+LABELS: devtools,python,llm,refactor,todo,context-management,api-limits
+ASSIGNEE: @me
+PROJECT: Laravel 12 Starter Kit
+REFACTOR_MOTIVATION: Melhorar a relevância da seleção de contexto preliminar (`--select-context`), gerenciar proativamente os limites de token e RPM da API Gemini, e aprimorar a experiência do usuário do script `llm_interact.py`.
+REFACTOR_DESCRIPTION:
+Modificar `scripts/llm_interact.py` para implementar as seguintes melhorias:
+
+1.  **Pré-injeção de Contexto Essencial para LLM Seletora (`--select-context`):**
+    *   Antes da chamada à API Gemini preliminar (que seleciona o contexto), o script DEVE identificar e carregar o *conteúdo* de arquivos "essenciais" baseados na tarefa (`selected_task`) e argumentos (`-i`, `-d`).
+        *   Exemplos:
+            *   `commit-mesage`: `git_diff_cached.txt`, `git_diff_unstaged.txt`.
+            *   Tasks com `-i <NUMERO_ISSUE>`: `github_issue_<NUMERO_ISSUE>_details.json`.
+            *   `fix-phpstan`: `phpstan_analysis.txt`.
+    *   O payload para a LLM seletora DEVE ser: `[Prompt Seletor Modificado] + [Conteúdo dos Arquivos Essenciais Pré-injetados] + [Lista de SUMÁRIOS dos demais arquivos do manifesto (com path, type, token_count)]`.
+    *   Prompts em `templates/context_selectors/` DEVEM ser atualizados para instruir a LLM seletora a considerar tanto o conteúdo pré-injetado quanto os sumários dos demais arquivos.
+
+2.  **Gerenciamento Proativo de Limites de Token e RPM:**
+    *   Calcular um `MAX_INPUT_TOKENS_PER_CALL` dinâmico para cada chamada à API Gemini, baseado no TPM do modelo (Nível Gratuito) menos uma estimativa de tokens de saída e um buffer de segurança.
+    *   Se o conteúdo essencial pré-injetado (item 1) exceder uma porção significativa deste limite (ex: 50% do budget da chamada preliminar), aplicar estratégias de redução: usar `summary` do manifesto, truncar conteúdo (mantendo início/fim), e logar essas ações.
+    *   O contexto final enviado às LLMs (seletora e principal) DEVE respeitar o `MAX_INPUT_TOKENS_PER_CALL` calculado. Estratégias de redução devem ser aplicadas se o limite for excedido.
+    *   Implementar um "rate limiter" no lado do cliente: antes de cada chamada à API, verificar o tempo desde a última chamada para o *mesmo modelo*. Se for menor que `60 / RPM_MODELO_GRATUITO`, introduzir `time.sleep()` para respeitar o RPM.
+
+3.  **Melhorias na Experiência do Usuário (`--select-context`):**
+    *   Ao exibir a lista de arquivos sugerida pela LLM seletora, mostrar o `token_count` (do manifesto) de cada arquivo.
+    *   Exibir o `token_count` total da seleção atual e o `MAX_INPUT_TOKENS_PER_CALL` para a chamada principal.
+    *   Atualizar dinamicamente o total de tokens conforme o usuário adiciona/remove arquivos na lista.
+    *   Se arquivos essenciais forem truncados/substituídos por sumários, informar o usuário.
+
+4.  **Tratamento de Arquivos Essenciais Ausentes:**
+    *   Se um arquivo "essencial" para pré-injeção não for encontrado, logar um aviso e perguntar ao usuário se deseja (C)ontinuar (sem o arquivo) ou (A)bortar.
+
+5.  **Logging Aprimorado:**
+    *   Adicionar logs detalhados para o fluxo `-sc`: quais arquivos são pré-injetados, tamanho do payload para a LLM seletora, lista retornada, e modificações do usuário.
+    *   Logar o modelo Gemini e o `MAX_INPUT_TOKENS_PER_CALL` para cada chamada.
+
+PROPOSED_SOLUTION:
+- Refatorar a função `prepare_context_parts` (ou criar uma nova) para lidar com a lógica de pré-injeção, sumarização e respeito aos limites de tokens de entrada.
+- Modificar o loop principal da flag `--select-context` para incluir a identificação de arquivos essenciais, carregamento de seu conteúdo (ou sumários) e construção do novo payload para a LLM seletora.
+- Atualizar todos os arquivos em `templates/context_selectors/` para refletir o novo formato de input que a LLM seletora receberá (conteúdo direto + sumários).
+- Implementar um dicionário ou função para mapear tarefas/argumentos para seus respectivos arquivos essenciais.
+- Adicionar lógica de `time.sleep()` baseada no RPM do modelo antes de cada chamada a `execute_gemini_call`.
+- Modificar `execute_gemini_call` ou seu chamador para usar `genai_client.models.count_tokens` para estimar o tamanho do input *antes* da chamada, se necessário para a lógica de redução de tokens.
+- Aprimorar a função `confirm_and_modify_selection` para incluir informações de contagem de tokens.
+
+ACCEPTANCE_CRITERIA:
+- [ ] Para tasks específicas (commit-mesage, tasks com -i, fix-*), o *conteúdo* dos arquivos essenciais é enviado à LLM seletora (respeitando limites), junto com sumários dos demais arquivos do manifesto.
+- [ ] O script calcula um limite máximo de tokens de entrada para cada chamada Gemini (preliminar e principal) baseado no TPM do modelo e uma estimativa de saída.
+- [ ] Se o contexto preparado (essencial + sumários para seletora; ou seleção final para principal) exceder o limite calculado, estratégias de redução (priorização, uso de sumários, truncamento) são aplicadas e logadas.
+- [ ] O script introduz um `time.sleep()` dinâmico entre chamadas API para o mesmo modelo, visando respeitar o limite de RPM (Requests Per Minute).
+- [ ] Ao interagir com a lista de contexto sugerida pelo `-sc`, o usuário vê a contagem de tokens dos arquivos e o total da seleção.
+- [ ] Avisos são emitidos se arquivos essenciais não forem encontrados, com opção para continuar ou abortar.
+- [ ] Logs detalhados descrevem o processo de seleção e preparação de contexto, incluindo quais arquivos são usados e por quê (essencial, sumário, seleção do usuário).
+- [ ] Todos os arquivos de template em `templates/context_selectors/` são atualizados para instruir a LLM a lidar com conteúdo pré-injetado e sumários.
+- [ ] O script continua funcional para todos os fluxos (direto, duas etapas, com/sem `-sc`).
+- [ ] Código Python formatado com Black/Pint e passa na análise estática (Mypy, se aplicável).
