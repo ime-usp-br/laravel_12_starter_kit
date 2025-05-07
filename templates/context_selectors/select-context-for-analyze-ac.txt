@@ -1,42 +1,47 @@
 **Sua Tarefa ÚNICA e ABSOLUTAMENTE RESTRITA:**
-Com base na descrição da tarefa principal e no manifesto JSON fornecido, selecione os arquivos **MAIS RELEVANTES** do manifesto que fornecerão o contexto ótimo para a IA realizar a tarefa principal.
+Com base na descrição da tarefa principal e no **CONTEXTO FORNECIDO** (que inclui CONTEÚDO ESSENCIAL e SUMÁRIOS de outros arquivos), selecione e **PRIORIZE** os arquivos mais relevantes para a tarefa principal.
 
 **Tarefa Principal:** Analisar o Critério de Aceite (AC) número `__NUMERO_DO_AC__` da Issue GitHub `__NUMERO_DA_ISSUE__` para determinar se ele foi atendido, gerando uma mensagem de conclusão para o GitHub. A análise deve considerar o código implementado, os padrões do projeto e o histórico de análises anteriores.
 
-**Manifesto JSON Fornecido:**
-Você receberá um dicionário JSON (aninhado sob a chave `files`) contendo metadados de arquivos do projeto (path, type, summary, token_count, etc.). Este manifesto JÁ FOI FILTRADO para excluir arquivos muito grandes.
+**Contexto Fornecido:**
+1.  **Conteúdo Essencial Pré-injetado:** Você receberá o conteúdo completo (ou sumário/truncado, se muito grande) de arquivos críticos como `github_issue___NUMERO_DA_ISSUE___details.json`, `git_diff_cached.txt`, `git_diff_unstaged.txt`. Analise este conteúdo diretamente.
+2.  **Sumários de Outros Arquivos:** Você receberá uma lista de sumários/metadados de outros arquivos do projeto (path, type, summary, token_count). Use estas informações para decidir se o arquivo completo correspondente deve ser incluído na sua seleção final.
 
-**Seu Processo de Seleção:**
+**Seu Processo de Seleção Priorizada:**
 1.  Entenda profundamente o objetivo da **Tarefa Principal**: avaliar o AC `__NUMERO_DO_AC__` da Issue `__NUMERO_DA_ISSUE__`.
-2.  Analise os metadados de CADA arquivo no `manifest.json` fornecido (path, type, summary).
-3.  Selecione APENAS os arquivos CRÍTICOS que contenham:
-    *   O código-fonte diretamente modificado/adicionado para implementar o AC `__NUMERO_DO_AC__` (inferido pelos diffs no contexto geral, se disponíveis no manifesto como `git_diff_*`).
-    *   Os detalhes completos da Issue `__NUMERO_DA_ISSUE__` (`github_issue___NUMERO_DA_ISSUE___details.json`).
-    *   Os arquivos de código (Models, Controllers, Views, Tests, etc.) que são DIRETAMENTE RELEVANTES para a funcionalidade descrita no AC `__NUMERO_DO_AC__`.
-    *   Os arquivos de documentação que definem os padrões a serem verificados (`guia_de_desenvolvimento.md`, `padroes_codigos_boas_praticas.md`).
-    *   Arquivos de teste relacionados à funcionalidade do AC.
-    *   **IMPORTANTE:** Outros arquivos `github_issue_*_details.json` que contenham exemplos de *análises de AC anteriores* para referência de estilo.
-4.  **Priorize:** Arquivos com `summary` claro e relevante. Se houver muitos arquivos potencialmente relevantes, priorize os mais específicos e com menor `token_count`, se possível, mas garanta que o contexto essencial seja incluído.
-5.  **Exclua:** Arquivos genéricos de configuração, dependências (composer/package), ou arquivos de contexto não diretamente relacionados à validação específica do AC `__NUMERO_DO_AC__` ou ao estilo de análise, a menos que o `summary` indique alta relevância.
+2.  Analise o **Conteúdo Essencial Pré-injetado** para entender os requisitos e as mudanças.
+3.  Analise os **Sumários de Outros Arquivos** para identificar arquivos adicionais úteis.
+4.  Crie uma **LISTA PRIORIZADA** de caminhos relativos (`path`) dos arquivos que você considera MAIS importantes para a IA realizar a tarefa principal. A ordem é crucial: **os mais importantes DEVEM vir primeiro.**
+5.  **Arquivos a Priorizar (em ordem aproximada de importância):**
+    *   O arquivo de detalhes da Issue (`github_issue___NUMERO_DA_ISSUE___details.json` - cujo conteúdo você já recebeu).
+    *   Os arquivos de diff (`git_diff_*.txt` - cujo conteúdo você já recebeu).
+    *   Arquivos de código fonte (`.php`, `.blade.php`, `.js`) diretamente modificados ou criados para o AC (identificados via diffs e sumários).
+    *   Arquivos de teste (`tests/`) relevantes para o AC.
+    *   Arquivos de documentação de padrões (`guia_*.md`, `padroes_*.md`).
+    *   Outros arquivos `github_issue_*_details.json` com análises de AC anteriores (para estilo).
+    *   Código relacionado (Models, Services, etc., se indicado pelo `summary`).
+6.  **Objetivo de Tokens:** Tente manter o **soma** dos `token_count` dos arquivos que você selecionou (usando o valor do sumário/metadados) abaixo de aproximadamente `__BUDGET_PARA_CHAMADA_PRINCIPAL__` tokens. No entanto, **PRIORIZE incluir os arquivos mais críticos** (detalhes da issue, diffs, código modificado, testes relevantes) mesmo que isso exceda um pouco o budget. A ordenação correta é mais importante que o limite estrito aqui.
+7.  **Exclua:** Arquivos claramente irrelevantes para a análise do AC __NUMERO_DO_AC__ e para a verificação de padrões e estilo de análise.
 
 **Formato de Saída OBRIGATÓRIO E ESTRITO:**
-Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser uma LISTA (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado do manifesto.
+Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser a LISTA **PRIORIZADA** (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado.
 
 **Exemplo de Saída:**
 ```json
 {
   "relevant_files": [
+    "context_llm/code/YYYYMMDD_HHMMSS/github_issue___NUMERO_DA_ISSUE___details.json",
+    "context_llm/code/YYYYMMDD_HHMMSS/git_diff_cached.txt",
     "app/Http/Controllers/SomeController.php",
-    "resources/views/some/view.blade.php",
     "tests/Feature/SomeFeatureTest.php",
     "docs/padroes_codigo_boas_praticas.md",
-    "context_llm/code/YYYYMMDD_HHMMSS/github_issue___NUMERO_DA_ISSUE___details.json",
-    "context_llm/code/YYYYMMDD_HHMMSS/github_issue_PREVIOUS_details.json"
+    "context_llm/code/YYYYMMDD_HHMMSS/github_issue_PREVIOUS_details.json",
+    "resources/views/some/view.blade.php"
   ]
 }
 ```
 
 **REGRAS ADICIONAIS:**
--   **NÃO** inclua NENHUM texto explicativo, introdução, saudação ou qualquer outra coisa fora do objeto JSON.
+-   **NÃO** inclua NENHUM texto explicativo.
 -   Sua resposta completa DEVE começar com `{` e terminar com `}`.
--   Se NENHUM arquivo for considerado relevante (caso extremamente raro), retorne `{"relevant_files": []}`.
+-   Se NENHUM arquivo for considerado relevante (improvável), retorne `{"relevant_files": []}`.

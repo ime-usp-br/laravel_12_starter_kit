@@ -1,30 +1,34 @@
 **Sua Tarefa ÚNICA e ABSOLUTAMENTE RESTRITA:**
-Com base na descrição da tarefa principal e no manifesto JSON fornecido, selecione os arquivos **MAIS RELEVANTES** do manifesto que fornecerão o contexto ótimo para a IA realizar a tarefa principal.
+Com base na descrição da tarefa principal e no **CONTEXTO FORNECIDO** (que inclui CONTEÚDO ESSENCIAL e SUMÁRIOS de outros arquivos), selecione e **PRIORIZE** os arquivos mais relevantes para a tarefa principal.
 
 **Tarefa Principal:** Gerar uma mensagem de commit Git concisa e informativa que descreva as alterações recentes, seguindo o padrão Conventional Commits e o estilo histórico do projeto. A mensagem deve referenciar a Issue e o AC principal relacionados às mudanças.
 
-**Manifesto JSON Fornecido:**
-Você receberá um dicionário JSON (aninhado sob a chave `files`) contendo metadados de arquivos do projeto (path, type, summary, token_count, etc.). Este manifesto JÁ FOI FILTRADO para excluir arquivos muito grandes.
+**Contexto Fornecido:**
+1.  **Conteúdo Essencial Pré-injetado:** Você receberá o conteúdo completo (ou sumário/truncado) de arquivos críticos como `git_diff_cached.txt` e `git_diff_unstaged.txt`. Analise este conteúdo diretamente para entender as mudanças.
+2.  **Sumários de Outros Arquivos:** Você receberá uma lista de sumários/metadados de outros arquivos do projeto (path, type, summary, token_count), incluindo `git_log.txt`, `github_issue_*_details.json`, guias de desenvolvimento, etc. Use estas informações para decidir se o arquivo completo correspondente deve ser incluído na sua seleção final.
 
-**Seu Processo de Seleção:**
+**Seu Processo de Seleção Priorizada:**
 1.  Entenda profundamente o objetivo da **Tarefa Principal**: gerar uma mensagem de commit Git para as últimas alterações.
-2.  Analise os metadados de CADA arquivo no `manifest.json` fornecido (path, type, summary).
-3.  Selecione APENAS os arquivos CRÍTICOS que contenham:
-    *   Os diffs das alterações que precisam ser commitadas (`git_diff_cached.txt`, `git_diff_unstaged.txt`).
-    *   O histórico de commits recentes (`git_log.txt`) para inferir o estilo e formato.
-    *   Os detalhes da(s) Issue(s) principal(is) relacionadas às alterações (`github_issue_*_details.json`).
-    *   Os guias de desenvolvimento que definem os padrões de commit (`guia_de_desenvolvimento.md`, `padroes_codigos_boas_praticas.md`).
-4.  **Priorize:** Diffs, log e detalhes da issue são essenciais. Guias são secundários, mas úteis.
-5.  **Exclua:** Código fonte completo, testes, arquivos de configuração gerais, dependências, e outros arquivos de contexto não diretamente relacionados à *descrição das mudanças recentes* ou ao *estilo de commit*, a menos que o `summary` indique uma relevância muito alta e específica para entender o *propósito* do commit.
+2.  Analise o **Conteúdo Essencial Pré-injetado** (diffs) para ver o que mudou.
+3.  Analise os **Sumários de Outros Arquivos** para identificar arquivos adicionais úteis.
+4.  Crie uma **LISTA PRIORIZADA** de caminhos relativos (`path`) dos arquivos que você considera MAIS importantes para a IA gerar a mensagem de commit. A ordem é crucial: **os mais importantes DEVEM vir primeiro.**
+5.  **Arquivos a Priorizar (em ordem aproximada de importância):**
+    *   Os arquivos de diff (`git_diff_*.txt` - cujo conteúdo você já recebeu).
+    *   O arquivo de log Git (`git_log.txt` - use o sumário para decidir se precisa do conteúdo completo para estilo).
+    *   O arquivo de detalhes da Issue principal relacionada às mudanças (`github_issue_XYZ_details.json` - use o sumário).
+    *   Os guias de desenvolvimento que definem padrões de commit (`guia_*.md`, `padroes_*.md` - use os sumários).
+6.  **Objetivo de Tokens:** Tente manter o **soma** dos `token_count` dos arquivos que você selecionou (usando o valor do sumário/metadados) abaixo de aproximadamente `__BUDGET_PARA_CHAMADA_PRINCIPAL__` tokens. **PRIORIZE incluir os diffs e o log Git** (ou pelo menos seus sumários) mesmo que exceda um pouco o budget.
+7.  **Exclua:** Código fonte completo, testes, configurações gerais, dependências, e outros arquivos não diretamente relacionados à *descrição das mudanças* ou ao *estilo de commit*.
 
 **Formato de Saída OBRIGATÓRIO E ESTRITO:**
-Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser uma LISTA (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado do manifesto.
+Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser a LISTA **PRIORIZADA** (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado.
 
 **Exemplo de Saída:**
 ```json
 {
   "relevant_files": [
     "context_llm/code/YYYYMMDD_HHMMSS/git_diff_cached.txt",
+    "context_llm/code/YYYYMMDD_HHMMSS/git_diff_unstaged.txt",
     "context_llm/code/YYYYMMDD_HHMMSS/git_log.txt",
     "context_llm/code/YYYYMMDD_HHMMSS/github_issue_XYZ_details.json",
     "docs/guia_de_desenvolvimento.md"
@@ -33,6 +37,6 @@ Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contend
 ```
 
 **REGRAS ADICIONAIS:**
--   **NÃO** inclua NENHUM texto explicativo, introdução, saudação ou qualquer outra coisa fora do objeto JSON.
+-   **NÃO** inclua NENHUM texto explicativo.
 -   Sua resposta completa DEVE começar com `{` e terminar com `}`.
--   Se NENHUM arquivo for considerado relevante (improvável para esta tarefa), retorne `{"relevant_files": []}`.
+-   Se NENHUM arquivo for considerado relevante (improvável), retorne `{"relevant_files": []}`.

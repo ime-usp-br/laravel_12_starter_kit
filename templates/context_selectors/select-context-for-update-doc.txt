@@ -1,41 +1,45 @@
 **Sua Tarefa ÚNICA e ABSOLUTAMENTE RESTRITA:**
-Com base na descrição da tarefa principal e no manifesto JSON fornecido, selecione os arquivos **MAIS RELEVANTES** do manifesto que fornecerão o contexto ótimo para a IA realizar a tarefa principal.
+Com base na descrição da tarefa principal e no **CONTEXTO FORNECIDO** (que inclui CONTEÚDO ESSENCIAL e SUMÁRIOS de outros arquivos), selecione e **PRIORIZE** os arquivos mais relevantes para a tarefa principal.
 
-**Tarefa Principal:** Analisar as mudanças da Issue `__NUMERO_DA_ISSUE__` e gerar o conteúdo atualizado para o arquivo de documentação `__ARQUIVO_DOC_ALVO__`, e potencialmente o `CHANGELOG.md`, mantendo o estilo e formato originais.
+**Tarefa Principal:** Analisar as mudanças da Issue `__NUMERO_DA_ISSUE__` e gerar o conteúdo atualizado para o arquivo de documentação `__ARQUIVO_DOC_ALVO__`, e potencialmente o `CHANGELOG.md`.
 
-**Manifesto JSON Fornecido:**
-Você receberá um dicionário JSON (aninhado sob a chave `files`) contendo metadados de arquivos do projeto (path, type, summary, token_count, etc.). Este manifesto JÁ FOI FILTRADO para excluir arquivos muito grandes.
+**Contexto Fornecido:**
+1.  **Conteúdo Essencial Pré-injetado:** Você receberá o conteúdo completo (ou sumário/truncado) de arquivos críticos como `github_issue___NUMERO_DA_ISSUE___details.json`, diffs (`git_diff_*.txt`), e o conteúdo atual do arquivo `__ARQUIVO_DOC_ALVO__`. Analise este conteúdo diretamente.
+2.  **Sumários de Outros Arquivos:** Você receberá uma lista de sumários/metadados de outros arquivos (path, type, summary, token_count), incluindo `CHANGELOG.md`, guias de documentação, etc. Use estas informações para decidir se o arquivo completo correspondente deve ser incluído.
 
-**Seu Processo de Seleção:**
-1.  Entenda profundamente o objetivo da **Tarefa Principal**: atualizar `__ARQUIVO_DOC_ALVO__` e `CHANGELOG.md` para refletir as mudanças da Issue `__NUMERO_DA_ISSUE__`.
-2.  Analise os metadados de CADA arquivo no `manifest.json` fornecido (path, type, summary).
-3.  Selecione APENAS os arquivos CRÍTICOS que contenham:
-    *   Os diffs das alterações realizadas na Issue `__NUMERO_DA_ISSUE__` (`git_diff_cached.txt`, `git_diff_unstaged.txt` ou logs relevantes).
-    *   Os detalhes completos da Issue `__NUMERO_DA_ISSUE__` (`github_issue___NUMERO_DA_ISSUE___details.json`) para entender o propósito das mudanças.
-    *   O **conteúdo atual** do(s) arquivo(s) de documentação a ser(em) atualizado(s), PRINCIPALMENTE `__ARQUIVO_DOC_ALVO__` e `CHANGELOG.md` (se presentes no manifesto).
-    *   O guia de versionamento da documentação (`docs/versionamento_documentacao.md`).
-    *   Outros arquivos de documentação (`README.md`, `docs/*.md`) para referência de estilo e estrutura, se necessário.
-4.  **Priorize:** Diffs, detalhes da issue, e o conteúdo atual dos arquivos de documentação alvo são essenciais. Guias de versionamento/desenvolvimento são importantes para formato.
-5.  **Exclua:** Código fonte (a menos que o `summary` indique algo crucial para a documentação), testes, arquivos de configuração, dependências, e outros arquivos de contexto não diretamente necessários para *entender as mudanças e reescrever a documentação*, a menos que o `summary` indique relevância crítica.
+**Seu Processo de Seleção Priorizada:**
+1.  Entenda profundamente o objetivo da **Tarefa Principal**: atualizar `__ARQUIVO_DOC_ALVO__` e `CHANGELOG.md` para refletir a Issue `__NUMERO_DA_ISSUE__`.
+2.  Analise o **Conteúdo Essencial Pré-injetado** (issue, diffs, doc alvo).
+3.  Analise os **Sumários de Outros Arquivos**.
+4.  Crie uma **LISTA PRIORIZADA** de caminhos relativos (`path`) dos arquivos que você considera MAIS importantes para a IA gerar a documentação atualizada. A ordem é crucial.
+5.  **Arquivos a Priorizar (em ordem aproximada de importância):**
+    *   O arquivo de detalhes da Issue (`github_issue___NUMERO_DA_ISSUE___details.json` - conteúdo pré-injetado).
+    *   Os arquivos de diff (`git_diff_*.txt` - conteúdo pré-injetado).
+    *   O arquivo de documentação alvo (`__ARQUIVO_DOC_ALVO__` - conteúdo pré-injetado).
+    *   O arquivo `CHANGELOG.md` (identifique pelo sumário).
+    *   O guia de versionamento da documentação (`docs/versionamento_documentacao.md` - use o sumário).
+    *   Outros guias (`guia_*.md`, `padroes_*.md`) para referência de estilo (use sumários).
+6.  **Objetivo de Tokens:** Tente manter o **soma** dos `token_count` dos arquivos que você selecionou (usando o valor do sumário/metadados) abaixo de aproximadamente `__BUDGET_PARA_CHAMADA_PRINCIPAL__` tokens. **PRIORIZE incluir os detalhes da issue, os diffs e o conteúdo atual dos documentos alvo (`__ARQUIVO_DOC_ALVO__`, `CHANGELOG.md`)**, mesmo que exceda um pouco o budget.
+7.  **Exclua:** Código fonte, testes, configurações, dependências, outros arquivos de contexto não diretamente necessários para *entender as mudanças e reescrever a documentação alvo*.
 
 **Formato de Saída OBRIGATÓRIO E ESTRITO:**
-Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser uma LISTA (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado do manifesto.
+Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser a LISTA **PRIORIZADA** (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado.
 
 **Exemplo de Saída:**
 ```json
 {
   "relevant_files": [
-    "__ARQUIVO_DOC_ALVO__", 
-    "CHANGELOG.md",
-    "context_llm/code/YYYYMMDD_HHMMSS/git_diff_cached.txt",
     "context_llm/code/YYYYMMDD_HHMMSS/github_issue___NUMERO_DA_ISSUE___details.json",
+    "context_llm/code/YYYYMMDD_HHMMSS/git_diff_cached.txt",
+    "__ARQUIVO_DOC_ALVO__",
+    "CHANGELOG.md",
     "docs/versionamento_documentacao.md",
-    "README.md" 
+    "README.md"
   ]
 }
 ```
 
 **REGRAS ADICIONAIS:**
--   **NÃO** inclua NENHUM texto explicativo, introdução, saudação ou qualquer outra coisa fora do objeto JSON.
+-   **NÃO** inclua NENHUM texto explicativo.
 -   Sua resposta completa DEVE começar com `{` e terminar com `}`.
 -   Se NENHUM arquivo for considerado relevante (improvável), retorne `{"relevant_files": []}`.

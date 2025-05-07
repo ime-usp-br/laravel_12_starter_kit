@@ -1,40 +1,43 @@
 **Sua Tarefa ÚNICA e ABSOLUTAMENTE RESTRITA:**
-Com base na descrição da tarefa principal e no manifesto JSON fornecido, selecione os arquivos **MAIS RELEVANTES** do manifesto que fornecerão o contexto ótimo para a IA realizar a tarefa principal.
+Com base na descrição da tarefa principal e no **CONTEXTO FORNECIDO** (que inclui CONTEÚDO ESSENCIAL e SUMÁRIOS de outros arquivos), selecione e **PRIORIZE** os arquivos mais relevantes para a tarefa principal.
 
-**Tarefa Principal:** Analisar a saída do comando `php artisan test` (contida em `phpunit_test_results.txt`), identificar os testes que falharam, determinar se o erro está no código do teste ou no código da aplicação referenciado, e gerar o código PHP corrigido para o(s) arquivo(s) apropriado(s).
+**Tarefa Principal:** Analisar a saída do comando `php artisan test` (contida em `phpunit_test_results.txt`), identificar os testes que falharam, determinar a causa e gerar o código PHP corrigido para o(s) arquivo(s) apropriado(s).
 
-**Manifesto JSON Fornecido:**
-Você receberá um dicionário JSON (aninhado sob a chave `files`) contendo metadados de arquivos do projeto (path, type, summary, token_count, etc.). Este manifesto JÁ FOI FILTRADO para excluir arquivos muito grandes.
+**Contexto Fornecido:**
+1.  **Conteúdo Essencial Pré-injetado:** Você receberá o conteúdo completo (ou sumário/truncado) de `phpunit_test_results.txt`. Analise este conteúdo diretamente para identificar as falhas, testes afetados e stack traces.
+2.  **Sumários de Outros Arquivos:** Você receberá uma lista de sumários/metadados de outros arquivos (path, type, summary, token_count), incluindo arquivos de teste PHPUnit, código da aplicação (`app/...`), guias, etc. Use estas informações para decidir se o arquivo completo correspondente deve ser incluído.
 
-**Seu Processo de Seleção:**
+**Seu Processo de Seleção Priorizada:**
 1.  Entenda profundamente o objetivo da **Tarefa Principal**: corrigir falhas reportadas em `phpunit_test_results.txt`.
-2.  Analise os metadados de CADA arquivo no `manifest.json` fornecido (path, type, summary).
-3.  Selecione APENAS os arquivos CRÍTICOS que contenham:
-    *   **OBRIGATÓRIO:** O resultado da execução dos testes (`phpunit_test_results.txt`). Este é o arquivo mais importante para identificar as falhas.
-    *   **OBRIGATÓRIO:** Os arquivos de teste (`tests/...Test.php`) específicos que são mencionados como falhos no `phpunit_test_results.txt`.
-    *   **ALTAMENTE RELEVANTE:** Os arquivos de código da aplicação (`app/...`) que são diretamente mencionados nas mensagens de erro ou stack traces dentro do `phpunit_test_results.txt`.
-    *   Os guias de desenvolvimento (`guia_de_desenvolvimento.md`, `padroes_codigos_boas_praticas.md`) que definem os padrões de código e teste.
-    *   (Opcional, se relevante para o erro) Outros arquivos PHP (Models, Services, Traits, Interfaces) que são dependências diretas do código que falhou (seja no teste ou na aplicação), para que a IA compreenda tipos e assinaturas. Use o `summary` para avaliar a relevância.
-4.  **Priorize:** O `phpunit_test_results.txt`, o(s) arquivo(s) de teste falho(s), e o(s) arquivo(s) da aplicação diretamente implicado(s) são essenciais. Guias de padrões são importantes. Código relacionado é contextual.
-5.  **Exclua:** Arquivos de teste que passaram, diffs de Git, logs de commit, detalhes de issues (a menos que diretamente relacionado ao erro), arquivos de configuração não relevantes, dependências, views Blade, assets, e outros arquivos de contexto não diretamente necessários para *diagnosticar e corrigir as falhas específicas* reportadas nos testes.
+2.  Analise o **Conteúdo Essencial Pré-injetado** (log PHPUnit).
+3.  Analise os **Sumários de Outros Arquivos**.
+4.  Crie uma **LISTA PRIORIZADA** de caminhos relativos (`path`) dos arquivos que você considera MAIS importantes para a IA diagnosticar e corrigir as falhas. A ordem é crucial.
+5.  **Arquivos a Priorizar (em ordem aproximada de importância):**
+    *   O log de resultados PHPUnit (`phpunit_test_results.txt` - cujo conteúdo você já recebeu).
+    *   Os arquivos de teste (`tests/...Test.php`) específicos mencionados como falhos no log (identifique pelos sumários).
+    *   Os arquivos de código da aplicação (`app/...`) diretamente mencionados nos erros ou stack traces do log (identifique pelos sumários).
+    *   Os guias de desenvolvimento (`guia_*.md`, `padroes_*.md` - use sumários).
+    *   (Opcional) Código relacionado (Models, Services, etc.) se os sumários indicarem que são necessários para entender o contexto do erro.
+6.  **Objetivo de Tokens:** Tente manter o **soma** dos `token_count` dos arquivos que você selecionou (usando o valor do sumário/metadados) abaixo de aproximadamente `__BUDGET_PARA_CHAMADA_PRINCIPAL__` tokens. **PRIORIZE incluir o log PHPUnit, o teste falho e o código da aplicação implicado**, mesmo que exceda um pouco o budget.
+7.  **Exclua:** Testes que passaram, diffs Git, logs commit, issues, configurações não relevantes, dependências, Views, assets, etc.
 
 **Formato de Saída OBRIGATÓRIO E ESTRITO:**
-Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser uma LISTA (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado do manifesto.
+Sua resposta DEVE ser **APENAS E SOMENTE APENAS** um objeto JSON válido contendo UMA ÚNICA chave chamada `relevant_files`. O valor desta chave DEVE ser a LISTA **PRIORIZADA** (array JSON) de strings, onde cada string é o caminho relativo EXATO de um arquivo selecionado.
 
 **Exemplo de Saída:**
 ```json
 {
   "relevant_files": [
     "context_llm/code/YYYYMMDD_HHMMSS/phpunit_test_results.txt",
-    "tests/Feature/Auth/FailingAuthenticationTest.php",
-    "app/Http/Controllers/Auth/LoginController.php",
-    "app/Models/User.php",
+    "tests/Feature/FailingTest.php",
+    "app/Services/ProblematicService.php",
+    "app/Models/RelatedModel.php",
     "docs/padroes_codigo_boas_praticas.md"
   ]
 }
 ```
 
 **REGRAS ADICIONAIS:**
--   **NÃO** inclua NENHUM texto explicativo, introdução, saudação ou qualquer outra coisa fora do objeto JSON.
+-   **NÃO** inclua NENHUM texto explicativo.
 -   Sua resposta completa DEVE começar com `{` e terminar com `}`.
--   Se NENHUM arquivo for considerado relevante (altamente improvável, o `phpunit_test_results.txt` sempre será), retorne `{"relevant_files": []}`.
+-   Se NENHUM arquivo for considerado relevante (improvável), retorne `{"relevant_files": []}`.
