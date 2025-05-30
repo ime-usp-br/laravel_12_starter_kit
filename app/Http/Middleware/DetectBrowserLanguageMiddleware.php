@@ -36,13 +36,13 @@ class DetectBrowserLanguageMiddleware
                 if (App::getLocale() !== $localeFromSession) {
                     App::setLocale($localeFromSession);
                 }
-                
+
                 return $next($request);
             } else {
                 Session::forget($sessionKey);
             }
         }
-        
+
         $browserPreferredLang = $request->getPreferredLanguage($availableLocaleKeys);
 
         if ($browserPreferredLang && isset($supportedLocales[$browserPreferredLang])) {
@@ -50,7 +50,7 @@ class DetectBrowserLanguageMiddleware
             Session::put($sessionKey, $browserPreferredLang);
         } else {
             $fallbackLocaleValue = Config::get($configFallbackLocaleKey, 'en');
-            
+
             if (is_string($fallbackLocaleValue) && isset($supportedLocales[$fallbackLocaleValue])) {
                 App::setLocale($fallbackLocaleValue);
                 Session::put($sessionKey, $fallbackLocaleValue);
