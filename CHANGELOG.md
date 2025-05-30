@@ -9,6 +9,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
+*   **[FEAT][Localization] Detecção e Aplicação de Locale do Navegador (#68):** Adiciona o `DetectBrowserLanguageMiddleware` para definir o locale da aplicação com base no header `Accept-Language` do navegador, priorizando o locale da sessão e caindo para o fallback configurado. Inclui nova opção `app.supported_locales` em `config/app.php` para definir idiomas suportados e testes de feature abrangentes.
 *   **[DevTools][Feature] Adiciona funcionalidade de execução seletiva de estágios no script de geração de contexto (`scripts/generate_context.py`), permitindo especificar quais partes do contexto devem ser atualizadas e copiando arquivos de estágios não executados do contexto anterior para garantir a completude. (Resolve #69)**
 *   **[TEST][AUTH] Adiciona testes de Feature (PHPUnit) e Browser (Dusk) para a UI de login local (#20), incluindo configuração, ambiente de teste dedicado (`.env.dusk.local`), integração CI e documentação de execução local para Dusk. (#31)**
 *   **[DevTools] Ferramenta de Interação com LLM (`scripts/llm_interact.py`):** Adiciona script Python para automatizar tarefas de desenvolvimento (geração de código para ACs, mensagens de commit, criação de PRs, atualização de documentação, análise de ACs) usando a API Gemini e o contexto do projeto. Inclui flags para geração de contexto (`-g`), pesquisa web (`-w`), confirmação automática (`-y`), modo apenas meta-prompt (`-om`), espera (`-ws`), seleção de arquivo de doc (`-d`), criação de PRs (`create-pr` com `-i`, `-b`, `--draft`), tratamento de rate limit e mais. (Refs #28)
@@ -84,7 +85,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 *   Estrutura de saída do script `gerar_contexto_llm.sh` modificada para colocar todos os arquivos no diretório raiz do timestamp.
 *   View `welcome.blade.php` reformulada para usar o cabeçalho USP e fornecer links básicos.
 *   View `login.blade.php` modificada para localização e adição de botões Senha Única/Registro.
-*   Layout `guest.blade.php` modificado para usar o cabeçalho USP e remover logo de aplicação padrão.
 
 ### Removido
 

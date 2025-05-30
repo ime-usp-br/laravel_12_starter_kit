@@ -79,6 +79,22 @@ Além da formatação, siga estas convenções e práticas recomendadas:
 
 ### Localização
 
+A aplicação Laravel 12 USP Starter Kit inclui um middleware para detecção automática do locale do navegador, aprimorando a experiência do usuário.
+
+*   **Detecção Automática de Locale (`DetectBrowserLanguageMiddleware`):**
+    *   Este middleware, registrado no grupo `web`, define o locale da aplicação (`App::setLocale()`) com base no cabeçalho `Accept-Language` da requisição HTTP.
+    *   Ele prioriza o locale que já pode estar definido na sessão do usuário. Se nenhum locale estiver na sessão, tenta mapear o idioma preferencial do navegador para um dos `supported_locales` configurados.
+    *   Se o idioma do navegador não for suportado, ou se a detecção falhar, o `config('app.fallback_locale')` será utilizado.
+    *   O locale determinado (seja por sessão, detecção do navegador ou fallback) é armazenado na sessão (`Session::put('locale', ...)`) para persistir durante a navegação.
+    *   **Configuração de Locales Suportados:** Defina a lista de idiomas que sua aplicação suporta na chave `supported_locales` dentro de `config/app.php`. Por exemplo:
+        ```php
+        'supported_locales' => [
+            'en' => 'English',
+            'pt_BR' => 'Português (Brasil)',
+            // 'es' => 'Español',
+        ],
+        ```
+    *   A prioridade de aplicação do locale é: **Sessão > Idioma do Navegador > Fallback Padrão.**
 *   **Tradução Mandatória:** Todo texto voltado ao usuário **DEVE** usar a função helper `__()`. Isso inclui texto em views Blade, mensagens de erro de validação, mensagens flash, títulos de página, labels de formulário, placeholders, texto de botões, e mensagens em respostas JSON ou logs destinados a usuários/administradores.
     ```php
     // Controller

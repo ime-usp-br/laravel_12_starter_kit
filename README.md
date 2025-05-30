@@ -39,6 +39,9 @@ Este Starter Kit vem pré-configurado com:
     *   Atribuição automática de roles no registro (Planejado).
     *   Interface básica TALL Stack para gerenciamento de Usuários, Roles e Permissões (Planejado).
     *   Aplicação de permissões hierárquicas e de vínculo vindas da Senha Única (guard `senhaunica`).
+*   **Localização e Internacionalização:**
+    *   **Detecção Automática de Locale:** Implementa um middleware (`DetectBrowserLanguageMiddleware`) que define o locale da aplicação com base no idioma preferencial do navegador (`Accept-Language` header). Prioriza o locale já definido na sessão, e utiliza um fallback (`app.fallback_locale`) se o idioma do navegador não for suportado. O locale determinado é persistido na sessão.
+    *   **Locales Suportados:** Configuração explícita de uma lista de idiomas suportados (`app.supported_locales` em `config/app.php`) para guiar a detecção.
 *   **Stack Frontend TALL (via Breeze):**
     *   **Livewire 3 (Class API):** Para componentes PHP interativos.
     *   **Alpine.js 3:** Para interatividade leve no frontend.
@@ -134,8 +137,11 @@ Este Starter Kit já vem com o Laravel Breeze (Stack TALL - Livewire Class API, 
         *   `APP_URL`: URL base da sua aplicação (ex: `http://localhost:8000`).
         *   `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`: Credenciais do seu banco de dados.
         *   `MAIL_*`: Configurações de e-mail (importante para verificação de e-mail).
+        *   `APP_LOCALE`: Locale padrão da aplicação (ex: `en`, `pt_BR`).
+        *   `APP_FALLBACK_LOCALE`: Locale de fallback caso o principal não esteja disponível.
         *   **Credenciais USP:** Adicione e configure as variáveis para `uspdev/senhaunica-socialite` e `uspdev/replicado` (veja a seção 7).
         *   **(Opcional) `GEMINI_API_KEY`:** Adicione sua chave da API Google Gemini para usar os scripts de LLM. Pode conter múltiplas chaves separadas por `|`.
+    *   **Revise `config/app.php`:** O array `supported_locales` foi adicionado para definir os idiomas que sua aplicação suporta, utilizado pelo middleware de detecção de idioma do navegador.
 
 6.  **Banco de Dados e Dados Iniciais:**
     *   Execute as migrações para criar todas as tabelas necessárias:
