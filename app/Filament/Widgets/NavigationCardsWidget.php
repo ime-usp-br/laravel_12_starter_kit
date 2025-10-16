@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\AuditResource;
+use App\Filament\Resources\EmailLogResource;
 use App\Filament\Resources\Permissions\PermissionResource;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Filament\Resources\Users\UserResource;
@@ -51,6 +52,14 @@ class NavigationCardsWidget extends Widget
                 'url' => AuditResource::getUrl('index'),
                 'color' => 'info',
                 'stats' => \OwenIt\Auditing\Models\Audit::count(),
+            ],
+            [
+                'title' => 'Logs de Emails',
+                'description' => 'Visualizar histórico de envios de email',
+                'icon' => 'heroicon-o-envelope',
+                'url' => EmailLogResource::getUrl('index'),
+                'color' => 'gray',
+                'stats' => \App\Models\EmailLog::count(),
             ],
         ];
     }
