@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +14,7 @@ use OwenIt\Auditing\Contracts\Auditable;
 use Spatie\Permission\Traits\HasRoles;
 use Uspdev\SenhaunicaSocialite\Traits\HasSenhaunica;
 
-class User extends Authenticatable implements Auditable, FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements Auditable, FilamentUser, MustVerifyEmail, CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -76,5 +78,16 @@ class User extends Authenticatable implements Auditable, FilamentUser, MustVerif
         }
 
         return true;
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
