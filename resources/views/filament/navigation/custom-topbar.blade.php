@@ -2,16 +2,19 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
-                <!-- Logo IME -->
-                <div class="shrink-0 flex items-center">
+                <!-- Logo IME + APP_NAME -->
+                <div class="shrink-0 flex items-center gap-3">
                     <a href="{{ route('dashboard') }}">
                         <img src="{{ Vite::asset('resources/images/ime/logo-horizontal-simplificada-padrao.png') }}"
                              alt="Logo IME-USP"
-                             class="w-20 h-auto block dark:hidden">
+                             class="w-14 h-auto block dark:hidden">
                         <img src="{{ Vite::asset('resources/images/ime/logo-horizontal-simplificada-branca.png') }}"
                              alt="Logo IME-USP"
-                             class="w-20 h-auto hidden dark:block">
+                             class="w-14 h-auto hidden dark:block">
                     </a>
+                    <span class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                        {{ config('app.name') }}
+                    </span>
                 </div>
 
                 <!-- Navigation Links -->

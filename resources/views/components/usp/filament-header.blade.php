@@ -86,21 +86,29 @@
 
         <div style="max-width: 80rem; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem;">
             <div style="display: flex; justify-content: space-between; height: 4rem;">
-                {{-- Logo IME --}}
-                <div style="flex-shrink: 0; display: flex; align-items: center;">
+                {{-- Logo IME + APP_NAME --}}
+                <div style="flex-shrink: 0; display: flex; align-items: center; gap: 0.75rem;">
                     <a href="{{ route('dashboard') }}" style="display: block;">
                         <img src="{{ Vite::asset('resources/images/ime/logo-horizontal-simplificada-padrao.png') }}"
                              alt="Logo IME-USP"
-                             style="width: 5rem; height: auto; display: block;"
+                             style="width: 3.5rem; height: auto; display: block;"
                              class="dark-hidden">
                         <img src="{{ Vite::asset('resources/images/ime/logo-horizontal-simplificada-branca.png') }}"
                              alt="Logo IME-USP"
-                             style="width: 5rem; height: auto; display: none;"
+                             style="width: 3.5rem; height: auto; display: none;"
                              class="dark-block">
                     </a>
+                    <span style="font-size: 1.125rem; font-weight: 600; color: rgb(55 65 81);" class="app-name-light">
+                        {{ config('app.name') }}
+                    </span>
+                    <span style="font-size: 1.125rem; font-weight: 600; color: rgb(209 213 219); display: none;" class="app-name-dark">
+                        {{ config('app.name') }}
+                    </span>
                     <style>
                         .dark .dark-hidden { display: none !important; }
                         .dark .dark-block { display: block !important; }
+                        .dark .app-name-light { display: none !important; }
+                        .dark .app-name-dark { display: block !important; }
                     </style>
                 </div>
 
