@@ -37,7 +37,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
      *
      * @var string
      */
-    protected $token;
+    public $token;
 
     /**
      * Create a new notification instance.
@@ -61,27 +61,39 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
 
     /**
      * Get the mail representation of the notification.
+     *
+     * @param  \App\Models\User  $notifiable
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = url(config('app.url') . route('password.reset', [
+        /** @var string $appUrl */
+        $appUrl = config('app.url') ?? '';
+        /** @var string $appName */
+        $appName = config('app.name') ?? 'App';
+        /** @var string $passwordBroker */
+        $passwordBroker = config('auth.defaults.passwords') ?? 'users';
+        /** @var int $expireMinutes */
+        $expireMinutes = config("auth.passwords.{$passwordBroker}.expire") ?? 60;
+
+        $url = url($appUrl.route('password.reset', [
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
         return (new MailMessage)
-            ->subject('Redefinição de Senha - ' . config('app.name'))
+            ->subject("Redefinição de Senha - {$appName}")
             ->greeting('Olá!')
             ->line('Você está recebendo este email porque recebemos uma solicitação de redefinição de senha para sua conta.')
             ->action('Redefinir Senha', $url)
-            ->line('Este link de redefinição de senha expirará em ' . config('auth.passwords.' . config('auth.defaults.passwords') . '.expire') . ' minutos.')
+            ->line("Este link de redefinição de senha expirará em {$expireMinutes} minutos.")
             ->line('Se você não solicitou uma redefinição de senha, nenhuma ação adicional é necessária.')
-            ->salutation('Atenciosamente, ' . config('app.name'));
+            ->salutation("Atenciosamente, {$appName}");
     }
 
     /**
      * Get the array representation of the notification.
      *
+     * @param  \App\Models\User  $notifiable
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array

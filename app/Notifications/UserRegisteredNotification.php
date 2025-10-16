@@ -11,14 +11,30 @@ class UserRegisteredNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /**
+     * @var int
+     */
     public $tries = 3;
+
+    /**
+     * @var int
+     */
     public $timeout = 60;
+
+    /**
+     * @var int
+     */
     public $maxExceptions = 2;
 
+    /**
+     * @var array<string, mixed>
+     */
     protected $userData;
 
     /**
      * Create a new notification instance.
+     *
+     * @param  array<string, mixed>  $userData
      */
     public function __construct(array $userData = [])
     {
@@ -39,16 +55,21 @@ class UserRegisteredNotification extends Notification implements ShouldQueue
 
     /**
      * Get the mail representation of the notification.
+     *
+     * @param  \App\Models\User  $notifiable
      */
     public function toMail(object $notifiable): MailMessage
     {
+        /** @var string $appName */
+        $appName = config('app.name') ?? 'App';
+
         return (new MailMessage)
-            ->subject('Novo Usuário Registrado - ' . config('app.name'))
+            ->subject("Novo Usuário Registrado - {$appName}")
             ->greeting('Novo Usuário Cadastrado')
             ->line('Um novo usuário se registrou no sistema:')
-            ->line('Nome: ' . $notifiable->name)
-            ->line('Email: ' . $notifiable->email)
-            ->line('Data: ' . now()->format('d/m/Y H:i:s'))
+            ->line("Nome: {$notifiable->name}")
+            ->line("Email: {$notifiable->email}")
+            ->line('Data: '.now()->format('d/m/Y H:i:s'))
             ->action('Ver Usuários', url('/admin/users'))
             ->line('Esta é uma notificação automática do sistema.');
     }
@@ -56,6 +77,7 @@ class UserRegisteredNotification extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      *
+     * @param  \App\Models\User  $notifiable
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array

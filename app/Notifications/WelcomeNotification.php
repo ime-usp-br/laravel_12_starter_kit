@@ -53,12 +53,17 @@ class WelcomeNotification extends Notification implements ShouldQueue
 
     /**
      * Get the mail representation of the notification.
+     *
+     * @param  \App\Models\User  $notifiable
      */
     public function toMail(object $notifiable): MailMessage
     {
+        /** @var string $appName */
+        $appName = config('app.name') ?? 'App';
+
         return (new MailMessage)
-            ->subject('Bem-vindo ao ' . config('app.name'))
-            ->greeting('Olá, ' . $notifiable->name . '!')
+            ->subject("Bem-vindo ao {$appName}")
+            ->greeting("Olá, {$notifiable->name}!")
             ->line('Seja bem-vindo ao nosso sistema.')
             ->line('Estamos felizes em tê-lo conosco.')
             ->action('Acessar o Sistema', url('/'))

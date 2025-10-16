@@ -11,16 +11,40 @@ class SystemAlertNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /**
+     * @var int
+     */
     public $tries = 5;
+
+    /**
+     * @var int
+     */
     public $timeout = 90;
+
+    /**
+     * @var int
+     */
     public $maxExceptions = 3;
 
+    /**
+     * @var string
+     */
     protected $alertType;
+
+    /**
+     * @var string
+     */
     protected $message;
+
+    /**
+     * @var array<string, mixed>
+     */
     protected $details;
 
     /**
      * Create a new notification instance.
+     *
+     * @param  array<string, mixed>  $details
      */
     public function __construct(string $alertType, string $message, array $details = [])
     {
@@ -44,11 +68,14 @@ class SystemAlertNotification extends Notification implements ShouldQueue
 
     /**
      * Get the mail representation of the notification.
+     *
+     * @param  \App\Models\User  $notifiable
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $alertTypeUpper = strtoupper($this->alertType);
         $mailMessage = (new MailMessage)
-            ->subject('[' . strtoupper($this->alertType) . '] Alerta do Sistema')
+            ->subject("[{$alertTypeUpper}] Alerta do Sistema")
             ->greeting('Alerta do Sistema');
 
         if ($this->alertType === 'critical') {
@@ -57,15 +84,16 @@ class SystemAlertNotification extends Notification implements ShouldQueue
 
         $mailMessage->line($this->message);
 
-        if (!empty($this->details)) {
+        if (! empty($this->details)) {
             $mailMessage->line('Detalhes:');
             foreach ($this->details as $key => $value) {
-                $mailMessage->line("- {$key}: {$value}");
+                $valueStr = is_scalar($value) ? (string) $value : json_encode($value);
+                $mailMessage->line("- {$key}: {$valueStr}");
             }
         }
 
         return $mailMessage
-            ->line('Data/Hora: ' . now()->format('d/m/Y H:i:s'))
+            ->line('Data/Hora: '.now()->format('d/m/Y H:i:s'))
             ->line('Esta é uma notificação automática do sistema.');
     }
 
@@ -106,6 +134,7 @@ class SystemAlertNotification extends Notification implements ShouldQueue
     {
         // Critical alerts try for 30 minutes, others for 15 minutes
         $minutes = $this->alertType === 'critical' ? 30 : 15;
+
         return now()->addMinutes($minutes);
     }
 }
