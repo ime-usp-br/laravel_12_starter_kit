@@ -6,8 +6,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
-    ->withEvents(discover: [
-        __DIR__.'/../app/Listeners',
+    ->withProviders([
+        \App\Providers\EventServiceProvider::class,
     ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
