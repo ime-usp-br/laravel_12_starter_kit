@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\WithEmailLogging;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,6 +11,7 @@ use Illuminate\Notifications\Notification;
 class SystemAlertNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use WithEmailLogging;
 
     /**
      * @var int
@@ -67,11 +69,11 @@ class SystemAlertNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Build the mail message for the notification.
      *
      * @param  \App\Models\User  $notifiable
      */
-    public function toMail(object $notifiable): MailMessage
+    protected function toMailMessage($notifiable): MailMessage
     {
         $alertTypeUpper = strtoupper($this->alertType);
         $mailMessage = (new MailMessage)

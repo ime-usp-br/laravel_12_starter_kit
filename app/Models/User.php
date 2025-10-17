@@ -81,6 +81,16 @@ class User extends Authenticatable implements Auditable, CanResetPassword, Filam
     }
 
     /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \App\Notifications\EmailVerificationNotification);
+    }
+
+    /**
      * Send the password reset notification.
      *
      * @param  string  $token
