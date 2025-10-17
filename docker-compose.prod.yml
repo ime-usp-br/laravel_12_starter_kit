@@ -1,0 +1,119 @@
+# =============================================================================
+# Laravel 12 Starter Kit - Production Docker Compose
+# =============================================================================
+# Simplified architecture with Nginx + PHP-FPM in the same container.
+# Inspired by the working 'salas' project configuration.
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d --build
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # Application Service (Nginx + PHP-FPM in same container)
+  # ===========================================================================
+  app:
+    build:
+      context: .
+      dockerfile: docker/production/Dockerfile
+      args:
+        WWWGROUP: '${WWWGROUP:-1000}'
+        WWWUSER: '${WWWUSER:-1000}'
+    image: '${APP_NAME:-laravel-app}:${APP_VERSION:-latest}'
+    container_name: ${APP_NAME:-laravel-app}-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      DB_HOST: mysql
+      DB_PORT: 3306
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      REPLICADO_HOST: ${REPLICADO_HOST}
+      REPLICADO_PORT: ${REPLICADO_PORT}
+      CONTAINER_ROLE: app
+    ports:
+      - '${APP_PORT:-8016}:80'
+    volumes:
+      # Persistent storage
+      - ./storage:/var/www/html/storage
+    networks:
+      - app-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # ===========================================================================
+  # Worker Service
+  # ===========================================================================
+  worker:
+    image: '${APP_NAME:-laravel-app}:${APP_VERSION:-latest}'
+    container_name: ${APP_NAME:-laravel-app}-worker
+    restart: unless-stopped
+    command: supervisord -c /etc/supervisor/conf.d/supervisord.worker.conf
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      DB_HOST: mysql
+      DB_PORT: 3306
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      REPLICADO_HOST: ${REPLICADO_HOST}
+      REPLICADO_PORT: ${REPLICADO_PORT}
+      CONTAINER_ROLE: worker
+    volumes:
+      - ./storage:/var/www/html/storage
+    networks:
+      - app-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # ===========================================================================
+  # MySQL Database
+  # ===========================================================================
+  mysql:
+    image: mysql:8.0
+    container_name: ${APP_NAME:-laravel-app}-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD:-secret}'
+      MYSQL_DATABASE: '${DB_DATABASE:-laravel}'
+      MYSQL_USER: '${DB_USERNAME:-laravel_user}'
+      MYSQL_PASSWORD: '${DB_PASSWORD:-secret}'
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command:
+      - '--default-authentication-plugin=mysql_native_password'
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_unicode_ci'
+
+volumes:
+  mysql-data:
+    driver: local
+    name: ${APP_NAME:-laravel-app}-mysql-data
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  app-network:
+    driver: bridge
+    name: ${APP_NAME:-laravel-app}-network
+    ipam:
+      config:
+        - subnet: ${DOCKER_NETWORK_SUBNET:-172.20.0.0/16}
+          gateway: ${DOCKER_NETWORK_GATEWAY:-172.20.0.1}
