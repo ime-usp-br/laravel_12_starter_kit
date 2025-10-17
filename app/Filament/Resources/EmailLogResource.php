@@ -53,7 +53,7 @@ class EmailLogResource extends Resource
                         Placeholder::make('notifiable')
                             ->label('Usuário Relacionado')
                             ->content(function (EmailLog $record): string {
-                                if (!$record->notifiable) {
+                                if (! $record->notifiable) {
                                     return 'Nenhum';
                                 }
 
@@ -94,12 +94,12 @@ class EmailLogResource extends Resource
                     ->schema([
                         Placeholder::make('created_at')
                             ->label('Criado em')
-                            ->content(fn (EmailLog $record): string => $record->created_at->format('d/m/Y H:i:s')),
+                            ->content(fn (EmailLog $record): string => $record->created_at?->format('d/m/Y H:i:s') ?? 'N/A'),
 
                         Placeholder::make('sent_at')
                             ->label('Enviado em')
                             ->content(function (EmailLog $record): string {
-                                if (!$record->sent_at) {
+                                if (! $record->sent_at) {
                                     return 'Não enviado';
                                 }
 
@@ -109,7 +109,7 @@ class EmailLogResource extends Resource
                         Placeholder::make('failed_at')
                             ->label('Falhou em')
                             ->content(function (EmailLog $record): string {
-                                if (!$record->failed_at) {
+                                if (! $record->failed_at) {
                                     return 'N/A';
                                 }
 
@@ -156,7 +156,7 @@ class EmailLogResource extends Resource
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
 
-                        if (strlen($state) <= 50) {
+                        if (! is_string($state) || strlen($state) <= 50) {
                             return null;
                         }
 
@@ -222,7 +222,7 @@ class EmailLogResource extends Resource
                         return EmailLog::query()
                             ->distinct()
                             ->pluck('notification_type', 'notification_type')
-                            ->mapWithKeys(fn ($type) => [$type => class_basename($type)])
+                            ->mapWithKeys(fn ($type, $key) => [is_string($type) ? $type : $key => is_string($type) ? class_basename($type) : $type])
                             ->toArray();
                     })
                     ->searchable(),

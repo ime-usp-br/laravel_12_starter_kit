@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -10,7 +11,7 @@ class EmailLog extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'uuid',
@@ -42,6 +43,8 @@ class EmailLog extends Model
 
     /**
      * Get the notifiable entity that the email was sent to.
+     *
+     * @phpstan-return MorphTo<Model, $this>
      */
     public function notifiable(): MorphTo
     {
@@ -51,10 +54,10 @@ class EmailLog extends Model
     /**
      * Scope a query to only include sent emails.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder<EmailLog>  $query
+     * @return Builder<EmailLog>
      */
-    public function scopeSent($query)
+    public function scopeSent(Builder $query): Builder
     {
         return $query->where('status', 'sent');
     }
@@ -62,10 +65,10 @@ class EmailLog extends Model
     /**
      * Scope a query to only include failed emails.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder<EmailLog>  $query
+     * @return Builder<EmailLog>
      */
-    public function scopeFailed($query)
+    public function scopeFailed(Builder $query): Builder
     {
         return $query->where('status', 'failed');
     }
@@ -73,10 +76,10 @@ class EmailLog extends Model
     /**
      * Scope a query to only include queued emails.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder<EmailLog>  $query
+     * @return Builder<EmailLog>
      */
-    public function scopeQueued($query)
+    public function scopeQueued(Builder $query): Builder
     {
         return $query->where('status', 'queued');
     }
@@ -84,11 +87,10 @@ class EmailLog extends Model
     /**
      * Scope a query to only include recent emails.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  int  $days
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder<EmailLog>  $query
+     * @return Builder<EmailLog>
      */
-    public function scopeRecent($query, $days = 7)
+    public function scopeRecent(Builder $query, int $days = 7): Builder
     {
         return $query->where('created_at', '>=', now()->subDays($days));
     }
@@ -102,7 +104,6 @@ class EmailLog extends Model
             'sent' => 'Enviado',
             'failed' => 'Falhado',
             'queued' => 'Na Fila',
-            default => ucfirst($this->status),
         };
     }
 
@@ -115,7 +116,6 @@ class EmailLog extends Model
             'sent' => 'success',
             'failed' => 'danger',
             'queued' => 'warning',
-            default => 'gray',
         };
     }
 

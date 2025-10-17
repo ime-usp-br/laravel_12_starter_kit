@@ -3,8 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Notifications\EmailVerificationNotification;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -78,7 +78,7 @@ class EmailVerificationTest extends TestCase
         // Verifica se a notificação de verificação foi enviada para o usuário correto
         Notification::assertSentTo(
             $user,
-            VerifyEmailNotification::class
+            EmailVerificationNotification::class
         );
 
         // AC6: Verifica se a mensagem de status (agora renderizada pelo componente) está presente na resposta do Livewire

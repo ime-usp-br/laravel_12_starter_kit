@@ -45,12 +45,12 @@ class LogEmailSendingListener
         }
 
         // Extract recipient information
-        $recipients = $message->getTo() ?? [];
+        $recipients = $message->getTo();
         $recipientEmails = $this->extractEmailAddresses($recipients);
 
         // Get the first (and usually only) recipient
-        $recipientEmail = !empty($recipientEmails) ? array_key_first($recipientEmails) : 'unknown';
-        $recipientName = !empty($recipientEmails) ? $recipientEmails[$recipientEmail] : null;
+        $recipientEmail = ! empty($recipientEmails) ? array_key_first($recipientEmails) : 'unknown';
+        $recipientName = ! empty($recipientEmails) ? $recipientEmails[$recipientEmail] : null;
 
         $subject = $message->getSubject() ?? 'No Subject';
 
@@ -94,6 +94,7 @@ class LogEmailSendingListener
     /**
      * Extract email addresses from address objects.
      *
+     * @param  array<int|string, object>|null  $addresses
      * @return array<string, string>
      */
     private function extractEmailAddresses(?array $addresses): array
@@ -102,13 +103,18 @@ class LogEmailSendingListener
             return [];
         }
 
+        /** @var array<string, string> $result */
         $result = [];
         foreach ($addresses as $address) {
             // Symfony Address object has getAddress() and getName() methods
-            if (is_object($address) && method_exists($address, 'getAddress')) {
-                $email = $address->getAddress();
-                $name = method_exists($address, 'getName') ? $address->getName() : null;
-                $result[$email] = $name ?? $email;
+            if (method_exists($address, 'getAddress')) {
+                $emailValue = $address->getAddress();
+                $nameValue = method_exists($address, 'getName') ? $address->getName() : null;
+
+                $email = is_string($emailValue) ? $emailValue : 'unknown';
+                $name = is_string($nameValue) && $nameValue !== '' ? $nameValue : $email;
+
+                $result[$email] = $name;
             } else {
                 // Fallback for unexpected format
                 $result['unknown'] = 'unknown';

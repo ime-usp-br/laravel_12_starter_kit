@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
  * The trait expects the notification class to have a toMailMessage() method
  * that returns a MailMessage instance. It will wrap this method and add
  * tracking headers before the email is sent.
+ *
+ * @template TNotifiable of object
  */
 trait WithEmailLogging
 {
@@ -34,7 +36,7 @@ trait WithEmailLogging
      * This method wraps the toMailMessage() method and adds custom headers
      * that are used by the email logging system to track notifications.
      *
-     * @param  mixed  $notifiable
+     * @param  TNotifiable  $notifiable
      */
     public function toMail($notifiable): MailMessage
     {
@@ -44,25 +46,35 @@ trait WithEmailLogging
         // Generate and cache metadata (will be serialized with notification)
         $this->emailLogUuid = (string) Str::uuid();
         $this->emailNotificationType = static::class;
-
-        if (is_object($notifiable)) {
-            $this->emailNotifiableType = get_class($notifiable);
-            $this->emailNotifiableId = isset($notifiable->id) ? (string) $notifiable->id : null;
-        }
+        $this->emailNotifiableType = get_class($notifiable);
+        $this->emailNotifiableId = property_exists($notifiable, 'id') ? (string) $notifiable->id : null;
 
         // Add as Symfony headers when the message is being built
-        $message->withSymfonyMessage(function ($email) {
+        $message->withSymfonyMessage(function ($email): void {
+            if (! is_object($email) || ! method_exists($email, 'getHeaders')) {
+                return;
+            }
+
             $headers = $email->getHeaders();
 
-            // Add headers using cached properties (available after deserialization)
-            $headers->addTextHeader('X-Email-Log-UUID', $this->emailLogUuid);
-            $headers->addTextHeader('X-Notification-Type', $this->emailNotificationType);
+            if (! is_object($headers) || ! method_exists($headers, 'addTextHeader')) {
+                return;
+            }
 
-            if ($this->emailNotifiableType) {
+            // Add headers using cached properties (available after deserialization)
+            if ($this->emailLogUuid !== null) {
+                $headers->addTextHeader('X-Email-Log-UUID', $this->emailLogUuid);
+            }
+
+            if ($this->emailNotificationType !== null) {
+                $headers->addTextHeader('X-Notification-Type', $this->emailNotificationType);
+            }
+
+            if ($this->emailNotifiableType !== null) {
                 $headers->addTextHeader('X-Notifiable-Type', $this->emailNotifiableType);
             }
 
-            if ($this->emailNotifiableId) {
+            if ($this->emailNotifiableId !== null) {
                 $headers->addTextHeader('X-Notifiable-Id', $this->emailNotifiableId);
             }
         });
@@ -76,7 +88,7 @@ trait WithEmailLogging
      * This method should be implemented by the notification class
      * and return a MailMessage instance.
      *
-     * @param  mixed  $notifiable
+     * @param  TNotifiable  $notifiable
      */
     abstract protected function toMailMessage($notifiable): MailMessage;
 }

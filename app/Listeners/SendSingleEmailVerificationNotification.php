@@ -11,9 +11,6 @@ class SendSingleEmailVerificationNotification
 {
     /**
      * Lida com o evento de registro de usuário.
-     *
-     * @param  \Illuminate\Auth\Events\Registered  $event
-     * @return void
      */
     public function handle(Registered $event): void
     {
@@ -25,7 +22,7 @@ class SendSingleEmailVerificationNotification
             $user = $event->user;
 
             // Cria uma chave de cache única para este usuário.
-            $cacheKey = 'verification_email_sent_' . $user->id;
+            $cacheKey = 'verification_email_sent_'.$user->id;
 
             // **LÓGICA DE BLOQUEIO DE CACHE (CACHE LOCK):**
             // Se a chave NÃO existir no cache, significa que o e-mail ainda não foi enviado.

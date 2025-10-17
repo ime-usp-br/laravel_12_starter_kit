@@ -2,16 +2,9 @@
 
 namespace App\Providers;
 
-use App\Listeners\LogEmailFailedListener;
-use App\Listeners\LogEmailSendingListener;
-use App\Listeners\LogEmailSentListener;
-use App\Listeners\MarkEmailAsVerifiedAfterSenhaUnicaLogin;
 use App\Listeners\SendSingleEmailVerificationNotification;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Mail\Events\MessageSending;
-use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
@@ -53,6 +46,8 @@ class EventServiceProvider extends ServiceProvider
 
     /**
      * Obtém os diretórios que devem ser usados para descobrir eventos.
+     *
+     * @return array<int, string>
      */
     protected function discoverEventsWithin(): array
     {

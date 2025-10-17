@@ -9,9 +9,11 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class EmailVerificationNotification extends VerifyEmail implements ShouldQueue, ShouldBeUnique
+class EmailVerificationNotification extends VerifyEmail implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
+
+    /** @use WithEmailLogging<\App\Models\User> */
     use WithEmailLogging;
 
     /**
@@ -37,7 +39,7 @@ class EmailVerificationNotification extends VerifyEmail implements ShouldQueue, 
     public function uniqueId(): string
     {
         // Make notification unique per user email
-        return 'email-verification-' . ($this->emailNotifiableId ?? 'unknown');
+        return 'email-verification-'.($this->emailNotifiableId ?? 'unknown');
     }
 
     /**
@@ -59,12 +61,15 @@ class EmailVerificationNotification extends VerifyEmail implements ShouldQueue, 
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
+        /** @var string $appName */
+        $appName = config('app.name') ?? 'App';
+
         return (new MailMessage)
-            ->subject('Verificação de Email - ' . config('app.name'))
+            ->subject("Verificação de Email - {$appName}")
             ->greeting('Olá!')
             ->line('Por favor, clique no botão abaixo para verificar seu endereço de email.')
             ->action('Verificar Email', $verificationUrl)
             ->line('Se você não criou uma conta, nenhuma ação adicional é necessária.')
-            ->salutation('Atenciosamente, ' . config('app.name'));
+            ->salutation("Atenciosamente, {$appName}");
     }
 }

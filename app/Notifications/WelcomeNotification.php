@@ -11,6 +11,8 @@ use Illuminate\Notifications\Notification;
 class WelcomeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    /** @use WithEmailLogging<\App\Models\User> */
     use WithEmailLogging;
 
     /**
@@ -56,16 +58,18 @@ class WelcomeNotification extends Notification implements ShouldQueue
     /**
      * Build the mail message for the notification.
      *
-     * @param  \App\Models\User  $notifiable
+     * @param  mixed  $notifiable
      */
     protected function toMailMessage($notifiable): MailMessage
     {
         /** @var string $appName */
         $appName = config('app.name') ?? 'App';
 
+        $name = is_object($notifiable) && property_exists($notifiable, 'name') && is_string($notifiable->name) ? $notifiable->name : 'Usuário';
+
         return (new MailMessage)
             ->subject("Bem-vindo ao {$appName}")
-            ->greeting("Olá, {$notifiable->name}!")
+            ->greeting("Olá, {$name}!")
             ->line('Seja bem-vindo ao nosso sistema.')
             ->line('Estamos felizes em tê-lo conosco.')
             ->action('Acessar o Sistema', url('/'))

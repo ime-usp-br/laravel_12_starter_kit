@@ -11,6 +11,8 @@ use Illuminate\Notifications\Notification;
 class SystemAlertNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    /** @use WithEmailLogging<\App\Models\User> */
     use WithEmailLogging;
 
     /**

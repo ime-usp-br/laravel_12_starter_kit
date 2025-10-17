@@ -44,10 +44,14 @@ class LogEmailSentListener
             }
         } else {
             // Fallback: Try to find by recipient email and subject (for emails without UUID header)
-            $recipients = $message->getTo() ?? [];
+            $recipients = $message->getTo();
+
+            if (! $recipients) {
+                return;
+            }
 
             foreach ($recipients as $email => $name) {
-                $emailStr = is_string($email) ? $email : (is_object($email) ? $email->toString() : 'unknown');
+                $emailStr = is_string($email) ? $email : 'unknown';
 
                 $emailLog = EmailLog::where('recipient_email', $emailStr)
                     ->where('subject', $message->getSubject() ?? 'No Subject')

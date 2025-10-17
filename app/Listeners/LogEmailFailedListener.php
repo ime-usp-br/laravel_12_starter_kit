@@ -14,24 +14,35 @@ class LogEmailFailedListener
     public function handle(JobFailed $event): void
     {
         // Check if the failed job is a notification
-        if (!Str::contains($event->job->payload()['displayName'] ?? '', 'Notification')) {
+        $payload = $event->job->payload();
+        $displayName = isset($payload['displayName']) && is_string($payload['displayName']) ? $payload['displayName'] : '';
+
+        if (! Str::contains($displayName, 'Notification')) {
             return;
         }
 
         // Decode job payload
-        $payload = json_decode($event->job->getRawBody(), true);
-        $command = unserialize($payload['data']['command'] ?? '');
+        $rawBody = $event->job->getRawBody();
+        $decodedPayload = json_decode($rawBody, true);
+
+        if (! is_array($decodedPayload) || ! isset($decodedPayload['data']) || ! is_array($decodedPayload['data']) || ! isset($decodedPayload['data']['command']) || ! is_string($decodedPayload['data']['command'])) {
+            return;
+        }
+
+        $commandData = $decodedPayload['data']['command'];
+        $command = unserialize($commandData);
 
         // Check if it's a notification with mail channel
-        if (!is_object($command) || !method_exists($command, 'notification')) {
+        if (! is_object($command) || ! method_exists($command, 'notification')) {
             return;
         }
 
         try {
-            $notification = $command->notification ?? null;
-            $notifiable = $command->notifiables[0] ?? null;
+            $notification = property_exists($command, 'notification') ? $command->notification : null;
+            $notifiables = property_exists($command, 'notifiables') && is_array($command->notifiables) ? $command->notifiables : [];
+            $notifiable = $notifiables[0] ?? null;
 
-            if (!$notification || !$notifiable) {
+            if (! is_object($notification) || ! is_object($notifiable)) {
                 return;
             }
 
@@ -39,10 +50,10 @@ class LogEmailFailedListener
             $notificationType = get_class($notification);
 
             // Get recipient email
-            $recipientEmail = $notifiable->email ?? null;
-            $recipientName = $notifiable->name ?? null;
+            $recipientEmail = property_exists($notifiable, 'email') && is_string($notifiable->email) ? $notifiable->email : null;
+            $recipientName = property_exists($notifiable, 'name') && is_string($notifiable->name) ? $notifiable->name : null;
 
-            if (!$recipientEmail) {
+            if (! $recipientEmail) {
                 return;
             }
 
@@ -67,11 +78,13 @@ class LogEmailFailedListener
                 ]);
             } else {
                 // Create new failed log entry
+                $notifiableId = property_exists($notifiable, 'id') ? $notifiable->id : null;
+
                 EmailLog::create([
                     'uuid' => (string) Str::uuid(),
                     'notification_type' => $notificationType,
                     'notifiable_type' => get_class($notifiable),
-                    'notifiable_id' => $notifiable->id ?? null,
+                    'notifiable_id' => $notifiableId,
                     'recipient_email' => $recipientEmail,
                     'recipient_name' => $recipientName,
                     'subject' => 'Failed to send',
