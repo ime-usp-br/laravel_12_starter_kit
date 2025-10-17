@@ -1,7 +1,7 @@
 # Laravel 12 USP Starter Kit
 
-**Versão:** 0.1.2<br>
-**Data:** 2025-10-07
+**Versão:** 0.1.3<br>
+**Data:** 2025-10-17
 
 [![Status da Build](https://github.com/ime-usp-br/laravel_12_starter_kit/actions/workflows/laravel.yml/badge.svg)](https://github.com/ime-usp-br/laravel_12_starter_kit/actions/workflows/laravel.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -39,6 +39,25 @@ Este Starter Kit vem pré-configurado com:
     *   Atribuição automática de roles no registro (Planejado).
     *   Interface básica TALL Stack para gerenciamento de Usuários, Roles e Permissões (Planejado).
     *   Aplicação de permissões hierárquicas e de vínculo vindas da Senha Única (guard `senhaunica`).
+*   **Sistema de Filas e Jobs Assíncronos:**
+    *   Configuração robusta de filas com driver `database`.
+    *   Workers de fila configurados via Supervisor para ambientes de produção.
+    *   Documentação completa em `README_QUEUES.md` sobre configuração e uso de filas.
+    *   Testes automatizados para jobs em fila.
+*   **Sistema de Logging de Email:**
+    *   Model `EmailLog` para rastreamento de todos os emails enviados.
+    *   Logging automático de eventos de email.
+    *   Integração com Filament Admin para visualização de logs.
+    *   Cache lock para prevenir notificações duplicadas de verificação de email.
+*   **Painel Administrativo Filament:**
+    *   Filament 4.x instalado e configurado.
+    *   Resource `EmailLogResource` para visualização de logs de email.
+    *   Dashboard básico acessível via `/admin`.
+*   **Infraestrutura Docker para Produção:**
+    *   Dockerfile otimizado para produção com multi-stage build.
+    *   Configuração Docker Compose para produção.
+    *   Scripts de deployment automatizados (`deploy.sh`, `setup-prod.sh`).
+    *   Configuração de workers de fila no container Docker.
 *   **Stack Frontend TALL (via Breeze):**
     *   **Livewire 3 (Class API):** Para componentes PHP interativos.
     *   **Alpine.js 3:** Para interatividade leve no frontend.

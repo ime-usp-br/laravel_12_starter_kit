@@ -7,7 +7,49 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [0.1.3] - 2025-10-17
+
 ### Adicionado
+
+*   **Sistema de Filas Assíncronas Completo:**
+    *   Configuração robusta de filas com driver `database`.
+    *   Workers de fila configurados via Supervisor para ambientes de produção.
+    *   Documentação completa em `README_QUEUES.md` sobre configuração e uso de filas.
+    *   Testes automatizados para jobs em fila.
+*   **Sistema de Logging e Verificação de Email:**
+    *   Model `EmailLog` para rastreamento de todos os emails enviados.
+    *   Migration para tabela `email_logs` com campos para rastreamento de status.
+    *   `EmailLogger` listener para logging automático de eventos de email.
+    *   Cache lock para prevenir notificações duplicadas de verificação de email.
+    *   Testes automatizados para verificação de email e logging.
+*   **Integração com Filament Admin:**
+    *   Painel administrativo Filament instalado e configurado.
+    *   Resource `EmailLogResource` para visualização de logs de email.
+    *   Navegação e dashboard básico do Filament.
+*   **Infraestrutura Docker para Produção:**
+    *   Dockerfile otimizado para produção com multi-stage build.
+    *   Configuração Docker Compose para produção (`docker-compose.prod.yml`).
+    *   Scripts de deployment e setup (`deploy.sh`, `setup-prod.sh`).
+    *   Configuração de workers de fila no container Docker.
+    *   Documentação completa de deployment Docker.
+*   **Melhorias de UI:**
+    *   Nome da aplicação exibido no cabeçalho.
+    *   Ajuste do tamanho do logo do IME.
+    *   Refatoração da página welcome para usar layout da aplicação.
+
+### Alterado
+
+*   **Notificações:**
+    *   Refatoração das classes de notificação para melhor organização e testes.
+    *   Melhoria na robustez e type safety dos recursos de email.
+*   **CI/CD:**
+    *   Remoção de testes Dusk do workflow GitHub Actions (executados localmente).
+    *   Configurações aprimoradas para ambiente de testes Dusk.
+    *   Configuração de locale `pt_BR` para testes Dusk.
+
+### Removido
+
+### Adicionado (v0.1.2 e anteriores)
 
 *   **Estrutura Base do Projeto:**
     *   Configuração inicial do projeto Laravel 12.
@@ -87,4 +129,5 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 *   Conteúdo padrão do `README.md` do Laravel.
 *   Logo `<x-application-logo />` do layout `guest.blade.php`.
 
-[Não lançado]: https://github.com/ime-usp-br/laravel_12_starter_kit/compare/HEAD
+[Não lançado]: https://github.com/ime-usp-br/laravel_12_starter_kit/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/ime-usp-br/laravel_12_starter_kit/compare/v0.1.2...v0.1.3

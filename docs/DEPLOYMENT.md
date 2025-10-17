@@ -1,5 +1,8 @@
 # Production Deployment Guide
 
+**Versão:** 0.1.3<br>
+**Data:** 2025-10-17
+
 This guide covers deploying the Laravel 12 Starter Kit to production using Docker.
 
 ## Prerequisites

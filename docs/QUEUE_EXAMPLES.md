@@ -1,5 +1,8 @@
 # Exemplos de Uso do Sistema de Filas
 
+**Versão:** 0.1.3<br>
+**Data:** 2025-10-17
+
 Este documento contém exemplos práticos de como usar o sistema de filas assíncronas no projeto.
 
 ## 📧 Notificações de Email Disponíveis

@@ -1,5 +1,8 @@
 # Sistema de Filas Assíncronas com Laravel 12
 
+**Versão:** 0.1.3<br>
+**Data:** 2025-10-17
+
 Este projeto utiliza o sistema de filas do Laravel 12 com driver `database` para processamento assíncrono de emails e notificações.
 
 ## 📋 Índice

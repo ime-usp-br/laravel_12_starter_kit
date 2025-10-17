@@ -1,5 +1,8 @@
 # 📬 Sistema de Filas Assíncronas - Laravel 12
 
+**Versão:** 0.1.3<br>
+**Data:** 2025-10-17
+
 Sistema completo de filas assíncronas implementado com **database driver** e workers gerenciados via **Supervisor** (PHP nativo) ou **Docker Sail**.
 
 ## ✅ Implementado
